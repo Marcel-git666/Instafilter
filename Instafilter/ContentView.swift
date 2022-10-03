@@ -12,6 +12,7 @@ import SwiftUI
 struct ContentView: View {
     @State private var image: Image?
     @State private var filterIntensity = 0.5
+    @State private var radius = 100.0
     
     @State private var showingImagePicker = false
     @State private var inputImage: UIImage?
@@ -42,9 +43,18 @@ struct ContentView: View {
                 }
 
                 HStack {
-                    Text("Intensity")
+                    Text("Intensity/Scale")
                     Slider(value: $filterIntensity)
                         .onChange(of: filterIntensity) { _ in applyProcessing() }
+
+                        
+                }
+                .padding(.vertical)
+                
+                HStack {
+                    Text("Radius")
+                    Slider(value: $radius, in: 1...200, step: 1)
+                        .onChange(of: radius) { _ in applyProcessing() }
 
                         
                 }
@@ -58,6 +68,7 @@ struct ContentView: View {
                     Spacer()
 
                     Button("Save", action: save)
+                        .disabled(image != nil ? false : true)
                 }
             }
             .padding([.horizontal, .bottom])
@@ -91,6 +102,14 @@ struct ContentView: View {
         guard let processedImage = processedImage else { return }
         
         let imageSaver = ImageSaver()
+        
+        imageSaver.successHandler = {
+            print("Success!")
+        }
+        
+        imageSaver.errorHandler = {
+            print("Oops! \($0.localizedDescription)")
+        }
         imageSaver.writeToPhotoAlbum(image: processedImage)
     }
     
@@ -99,7 +118,7 @@ struct ContentView: View {
         if inputKeys.contains(kCIInputIntensityKey) {
             currentFilter.setValue(filterIntensity, forKey: kCIInputIntensityKey) }
         if inputKeys.contains(kCIInputRadiusKey) {
-            currentFilter.setValue(filterIntensity * 200, forKey: kCIInputRadiusKey)}
+            currentFilter.setValue(radius, forKey: kCIInputRadiusKey)}
         if inputKeys.contains(kCIInputScaleKey) {
             currentFilter.setValue(filterIntensity * 10, forKey: kCIInputScaleKey)}
         
